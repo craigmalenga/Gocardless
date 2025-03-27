@@ -1,7 +1,6 @@
 # Ignore specific files in the repository root
 Categorisations.xlsx
 import requests.py
-import_requests.py
 callback_server.py
 
 # Ignore temporary Excel files
