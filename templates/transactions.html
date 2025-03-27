@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transactions</title>
+  <style>
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin-top: 20px; 
+    }
+    th, td { 
+      border: 1px solid #ccc; 
+      padding: 8px; 
+      text-align: left; 
+    }
+    th { 
+      background-color: #f2f2f2; 
+    }
+    select, input[type="text"] { 
+      width: 100%; 
+    }
+    .save-btn { 
+      padding: 5px 10px; 
+    }
+    .action-btn { 
+      display: inline-block; 
+      margin: 10px 0; 
+      padding: 10px 15px; 
+      background-color: #4CAF50; 
+      color: white; 
+      text-decoration: none; 
+      border-radius: 5px; 
+    }
+    .action-btn-red {
+      background-color: #f44336; /* Red for delete or danger actions */
+    }
+  </style>
+</head>
+<body>
+  <h1>Transactions (Categorised)</h1>
+
+  <!-- Buttons for CSV Download, Initial Categorisation, and overriding categories -->
+  <a href="/download-csv" class="action-btn">📄 Download CSV</a>
+  <a href="/initial-categorisation" class="action-btn">📝 Initial Categorisation</a>
+
+  <form action="/save-category" method="POST">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Currency</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Override</th>
+          <th>Add Keyword?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for txn in transactions %}
+        <tr>
+          <td>{{ txn.bookingDate }}</td>
+          <td>{{ txn.transactionAmount.amount }}</td>
+          <td>{{ txn.transactionAmount.currency }}</td>
+          <td>{{ txn.remittanceInformationUnstructured or 'N/A' }}</td>
+          <td>{{ txn.category }}</td>
+          <td>
+            <!-- Select Category Dropdown -->
+            <select name="category_{{ loop.index }}">
+              <option disabled selected>--Choose--</option>
+              <option value="Income" {% if txn.category == 'Income' %}selected{% endif %}>Income</option>
+              <option value="Rent/Mortgage" {% if txn.category == 'Rent/Mortgage' %}selected{% endif %}>Rent/Mortgage</option>
+              <option value="Council Tax" {% if txn.category == 'Council Tax' %}selected{% endif %}>Council Tax</option>
+              <option value="Utilities" {% if txn.category == 'Utilities' %}selected{% endif %}>Utilities</option>
+              <option value="Credit Commitments" {% if txn.category == 'Credit Commitments' %}selected{% endif %}>Credit Commitments</option>
+              <option value="Gambling Expenditure" {% if txn.category == 'Gambling Expenditure' %}selected{% endif %}>Gambling Expenditure</option>
+              <option value="Other" {% if txn.category == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+          </td>
+          <td>
+            <button class="save-btn" type="submit" name="txn_{{ loop.index }}">Save</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </form>
+
+  <script>
+    // JavaScript to handle saving a new keyword
+    function saveKeyword(description, category) {
+      if (!category) {
+        alert("Please select a category.");
+        return;
+      }
+
+      const keyword = prompt("Enter the keyword to save from this description:", description);
+      if (!keyword) return;
+
+      fetch("/add-keyword", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword, category })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        window.location.reload();
+      });
+    }
+  </script>
+</body>
+</html>

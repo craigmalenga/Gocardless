@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GoCardless Auth</title>
+</head>
+<body>
+  <h1>Start Authorization</h1>
+  <button onclick="startAuth()">Start</button>
+
+  <script>
+    function startAuth() {
+      fetch("/start-auth")
+        .then(res => res.json())
+        .then(data => {
+          if (data.auth_link) {
+            window.open(data.auth_link, "_blank");
+          } else {
+            alert("Failed: " + JSON.stringify(data));
+          }
+        });
+    }
+  </script>
+</body>
+</html>
